@@ -10,15 +10,7 @@ function createStore() {
 
 	return {
 		subscribe,
-		add: (newItems: IndexedStream[]) =>
-			update((items) => {
-				for (const newItem of newItems) {
-					if (!items.find((item: IndexedStream) => newItem.id === item.id))
-						items = [...items, newItem];
-				}
-				return items;
-			}),
-		put: (item: IndexedStream) =>
+		update: (item: IndexedStream) =>
 			update((items) => {
 				const index = findIndexById(item.id, items);
 				if (index != -1)
@@ -30,8 +22,6 @@ function createStore() {
 				return [...items, item];
 			}),
 		del: (id: string) => update((items) => items.filter((item: IndexedStream) => item.id !== id)),
-		update: (items: IndexedStream[]) => update(() => items),
-		set
 	};
 }
 

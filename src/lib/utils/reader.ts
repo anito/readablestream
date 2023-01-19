@@ -146,7 +146,7 @@ export function register(
 							data.controller = stream.controller;
 							data.reader = stream.reader;
 						}
-						streams.put({ id: path, stream });
+						streams.update({ id: path, stream });
 						if (stream.percent === 100) {
 							data.controller = undefined;
 							data.reader = undefined;
