@@ -1,33 +1,23 @@
 import { writable } from 'svelte/store';
+import type { Stream } from '$lib/types';
+import streams from '$lib/stores/streamStore';
 
-function createStore() {
-	const defaults = {
+function createStore(id: string) {
+	const defaults: Stream = {
 		current: undefined,
-		total: undefined,
+		total: 0,
 		percent: undefined,
 		controller: undefined,
 		reader: undefined
-	} as unknown as {
-		current: number;
-		total: number;
-		percent: number | undefined;
-		chunks?: Uint8Array[];
-		controller?: ReadableStreamDefaultController<any>;
-		reader?: ReadableStreamDefaultReader<Uint8Array> | undefined;
 	};
-	const { subscribe, update, set } = writable(defaults, (set) => {
-		console.log('first subscriber');
+	let stream = writable(defaults, (set) => {
 		return () => {
 			set(defaults);
-			console.log('no more subscribers');
+			streams.del(id);
 		};
 	});
 
-	return {
-		subscribe,
-		update,
-		set
-	};
+	return stream;
 }
 
 function bodyReader(store: {
@@ -132,7 +122,7 @@ export function register(
 
 	const initializer = {
 		stream: undefined,
-		store: createStore(),
+		store: createStore(path),
 		reader: undefined,
 		controller: undefined,
 		unsubscribe: undefined
@@ -147,16 +137,17 @@ export function register(
 			if (!data.controller) {
 				data.stream = fetch(token);
 				data.unsubscribe = data.store.subscribe(
-					(val: {
+					(stream: {
 						percent: number | undefined;
 						controller: ReadableStreamDefaultController<any>;
 						reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
 					}) => {
 						if (!data.controller) {
-							data.controller = val.controller;
-							data.reader = val.reader;
+							data.controller = stream.controller;
+							data.reader = stream.reader;
 						}
-						if (val.percent === 100) {
+						streams.put({ id: path, stream });
+						if (stream.percent === 100) {
 							data.controller = undefined;
 							data.reader = undefined;
 							data.stream = undefined;
@@ -171,12 +162,12 @@ export function register(
 					 */
 					data.controller?.close();
 					data.reader?.cancel();
-					data.unsubscribe?.();
 					data.reader = undefined;
 					data.controller = undefined;
+					data.stream = undefined;
+					data.unsubscribe?.();
 				} catch (err) {
 					console.log('ERROR in ReadableStream', err);
-					data.controller = undefined;
 				}
 			}
 			return data.stream;

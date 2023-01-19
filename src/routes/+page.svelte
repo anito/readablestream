@@ -1,5 +1,5 @@
-<script lang="typescript">
-  import { onMount } from 'svelte';
+<script lang="ts">
+  import { onMount, getContext } from 'svelte';
   import { fade } from 'svelte/transition';
   import { base } from '$lib/api';
   import { register } from '$lib/utils/reader';
@@ -21,6 +21,11 @@
    */
   const autostart = false;
   const url = base;
+  const { getProgress: getGlobalProgress }: any = getContext('progress');
+
+  const progress = getGlobalProgress();
+
+  $: progrssbarWidth = $progress;
 
   let imageStream: Promise<any>;
   let imageData: any;
@@ -118,11 +123,11 @@
 </script>
 
   <Blurb>
-    <div class="header" slot="header">
+    <header class="header" slot="header" style:--progressbar-w="{progrssbarWidth}%">
       <h2>Loading Ressources Example</h2>
       <h3>Uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream" target="_blank" re="noreferrer" alt="MDN ReadableStream">ReadableStream</a></h3>
       <i style="font-size: 0.8rem;">with DeveloperTools open or viewing in an Incognito tab you might be able to slow down loading progress</i>
-    </div>
+    </header>
     
     <Container class="one" slot="one">
       <div class="read-box">
@@ -258,6 +263,35 @@
     color: white;
     text-transform: uppercase;
     padding: 5px 10px;
+  }
+  header{
+    position: relative;
+  }
+	header::before,
+  header::after {
+    --progressbar-h: 3px;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--progressbar-w, 100%);
+    height: var(--progressbar-h);
+    background: var(--secondary);
+    transition: all ease-out 1s;
+    z-index: 1;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--progressbar-w, 100vw);
+    height: var(--progressbar-h);
+    background: var(--color-theme-1);
+    transition: all ease-out 1s;
+    z-index: 2;
   }
   .fileinfo {
     display: flex;
