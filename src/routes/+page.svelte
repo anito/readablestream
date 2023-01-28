@@ -9,10 +9,17 @@
   import IFrameViewer from './IFrameViewer.svelte';
 
   /**
+   * 
    * Autostart
    * - if you want the stream to start automatically, put the start method in onMount:
+   * 
+   * const { start, store } = register({
+   *   filename: 'sample.jpg',
+   *   url: http://example.com
+   * });
+   * 
    * onMount(() => {
-   *  myStreamPromise = myStart().stream()
+   *  myStreamPromise = start()
    * })
    * 
    * Manual start
@@ -83,10 +90,10 @@
 
   onMount(() => {
     if (autostart) {
-      imageStream = imageStart().stream?.();
-      textStream = textStart().stream?.();
-      zipStream = zipStart().stream?.();
-      pdfStream = pdfStart().stream?.();
+      imageStream = imageStart();
+      textStream = textStart();
+      zipStream = zipStart();
+      pdfStream = pdfStart();
     }
   });
 
